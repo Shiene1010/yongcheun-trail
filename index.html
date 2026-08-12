@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>동서라이트 MVP</title>
+    <style>
+        /* 아이폰 8 (375px) 시스템 완전 최적화 스타일 기본 세팅 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 아이폰 8 뷰포트 고정 프레임 */
+        #app-container {
+            width: 375px;
+            height: 667px;
+            background-color: #ffffff;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* 상단 고정 타이틀 바 */
+        header {
+            width: 100%;
+            height: 50px;
+            background-color: #1b4d3e; /* 깊은 숲색 */
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        /* 광고 수익화 영역 (구글 애드센스 탑재 뷰포트 확보) */
+        .ads-banner {
+            width: 100%;
+            height: 50px;
+            background-color: #eaeaea;
+            color: #666666;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* 중앙 콘텐츠 메인 스크롤 영역 */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 80px; /* 하단 탭 바 공간 확보 */
+            background-color: #fafafa;
+        }
+
+        /* 탭 화면 제어 클래스 */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 하단 고정형 3대 탭 바 */
+        nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            border-top: 1px solid #dddddd;
+            display: flex;
+            z-index: 10;
+        }
+
+        .tab-button {
+            flex: 1;
+            border: none;
+            background: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #888888;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .tab-button.active {
+            color: #1b4d3e;
+            font-weight: bold;
+        }
+
+        .tab-button span {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        /* [탭 1] 교통 타임라인 UI 컴포넌트 */
+        .timeline-card {
+            background: #fff;
+            border-left: 4px solid #1b4d3e;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .timeline-time {
+            font-size: 12px;
+            color: #888;
+        }
+        .timeline-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin: 4px 0;
+        }
+        .timeline-desc {
+            font-size: 13px;
+            color: #444;
+        }
+        .alert-text {
+            color: #d9534f;
+            font-weight: bold;
+        }
+
+        /* 플로팅 새로고침 버튼 (원형 JS 제어) */
+        .refresh-btn {
+            position: absolute;
+            bottom: 75px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            background-color: #1b4d3e;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            z-index: 9px;
+        }
+
+        /* [탭 2] 지도 와이어프레임 및 필터 버튼 UI */
+        .map-filter-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .filter-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background-color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .filter-btn.active-plain {
+            background-color: #e2f0d9;
+            border-color: #70ad47;
+            color: #385723;
+        }
+        .filter-btn.active-hiking {
+            background-color: #fce4d6;
+            border-color: #c65911;
+            color: #833c0c;
+        }
+        .mock-map {
+            width: 100%;
+            height: 380px;
+            background-color: #e5e5e5;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .map-line {
+            position: absolute;
+            width: 80%;
+            height: 6px;
+            border-radius: 3px;
+            display: none;
+        }
+
+        /* [탭 3] 무취사 보급 및 합법 야영지 카드 UI */
+        .lnt-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            border: 1px solid #ffeeba;
+        }
+        .supply-card {
+            background: #ffffff;
+            border: 1px solid #e1e1e1;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            border-radius: 3px;
+            margin-bottom: 6px;
+        }
+        .badge.market { background-color: #007bff; }
+        .badge.camp { background-color: #28a745; }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .card-meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .item-list {
+            font-size: 12px;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .tip-box {
+            font-size: 12px;
+            color: #1b4d3e;
+            background-color: #edf7ed;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="app-container">
+    <!-- 상단 숲속 감성 헤더 바 -->
+    <header>동서라이트 🥾</header>
+
+    <!-- 구글 애드센스 하이브리드 광고 영역 상시 확보 -->
+    <div class="ads-banner">스폰서 링크 광고 구역 (구글 애드센스 연동 배너)</div>
+
+    <!-- 메인 콘텐츠 영역 -->
+    <main>
+        
+        <!-- [화면 1] 🚌 실시간 환승 탭 -->
+        <div id="content-transit" class="tab-content active">
+            <div class="timeline-card">
+                <div class="timeline-time">오전 08:30</div>
+                <div class="timeline-title">지곡동 써니밸리 아파트 정문 출발</div>
+                <div class="timeline-desc">도보 또는 마을버스로 이동 시작</div>
+            </div>
+            
+            <div class="timeline-card">
+                <div class="timeline-time">오전 08:50 (실시간 오픈 API 연동)</div>
+                <div class="timeline-title">용인시청.용인대역 환승점</div>
+                <div class="timeline-desc">용인 10번 시내버스 <span class="alert-text">6분 후 도착 예정</span> (3개 정류장 전)</div>
+            </div>
+
+            <div class="timeline-card">
+                <div class="timeline-time">오전 09:50 -> 10:20 환승 대기</div>
+                <div class="timeline-title">백암정류소 (최신 실사 시간표 반영)</div>
+                <div class="timeline-desc">다음 추천 시외버스: <span class="alert-text">10:20 출발 예정</span> (경일여객 1329번)</div>
+            </div>
+
+            <div class="timeline-card">
+                <div class="timeline-time">오전 11:10 최종 안착 완료</div>
+                <div class="timeline-title">진천공용버스터미널 도착 마감</div>
+                <div class="timeline-desc" style="color: green; font-weight: bold;">✓ 현재 환승 스케줄 연산 결과: 안전지대 진입</div>
+            </div>
+            
+            <!-- 새로고침 플로팅 액션 버튼 -->
+            <button class="refresh-btn" onclick="alert('실시간 버스 도착 데이터(MOLIT API)가 갱신되었습니다.')">🔄</button>
+        </div>
+
+
+        <!-- [화면 2] 🥾 공공데이터 코스 맵 탭 -->
+        <div id="content-course" class="tab-content">
+            <div class="map-filter-group">
+                <button id="btn-plain" class="filter-btn active-plain" onclick="toggleMapRoute('PLAIN')">🟢 초보/평지 코스</button>
+                <button id="btn-hiking" class="filter-btn" onclick="toggleMapRoute('HIKING')">🔴 상급/하이킹 코스</button>
+            </div>
+            
+            <!-- 벡터 코스 지도 와이어프레임 가상 구역 -->
+            <div class="mock-map">
+                <span id="map-status-text">진천 농다리~초평호반 벡터 데이터 매핑 중</span>
+                <!-- 평지 궤적 레이어 시각화 -->
+                <div id="line-plain" class="map-line" style="background-color: #70ad47; top: 50%; left: 10%; display: block; transform: rotate(5deg);"></div>
+                <!-- 하이킹 궤적 레이어 시각화 -->
+                <div id="line-hiking" class="map-line" style="background-color: #c65911; top: 40%; left: 15%; display: none; transform: rotate(-25deg);"></div>
+            </div>
+        </div>
+
+
+        <!-- [화면 3] 🥩 무취사 보급 및 박지 탭 -->
+        <div id="content-supply" class="tab-content">
+            <div class="lnt-warning">🚨 산림청 지침: 국가숲길 및 허가구역 외 불법 야영·화기 사용은 과태료 대상입니다.</div>
+            
+            <div class="supply-card">
+                <span class="badge market">마트 보급</span>
+                <div class="card-title">GS더프레시 진천점</div>
+                <div class="card-meta">영업시간: 10:00 ~ 22:00 | 터미널 도보 3분</div>
+                <div class="item-list">🛒 추천 완제품: 슬라이스 족발(9,900원) / 양념 편육(7,800원)</div>
+                <div class="tip-box">💡 필드팀 답사 팁: 버너 없이 바로 먹는 고기류 재고가 가장 풍부함. 낮 12시 이전 방문 장보기 권장.</div>
+            </div>
+
+            <div class="supply-card">
+                <span class="badge market">편의점 인프라</span>
+                <div class="card-title">이마트24 진천농다리점</div>
+                <div class="card-meta">영업시간: 07:00 ~ 23:00 | 트레일 초입 위치</div>
+                <div class="tip-box">💡 필드팀 답사 팁: 매장 내 자율 개방형 대형 전자레인지 2대 배치 완료. 터미널 마트 식품 포장을 데워 가기 적합함.</div>
+            </div>
+
+            <div class="supply-card" style="border-color: #70ad47; background-color: #f9fbf9;">
+                <span class="badge camp">합법 박지 (제휴 야영장)</span>
+                <div class="card-title">초평호반 사설 캠핑장</div>
+                <div class="card-meta">바닥구조: 파쇄석 | 화기 취사 금지 구역 전제</div>
+                <div class="tip-box" style="color: #2b542c; background-color: #e2f0d9;">💡 필드팀 답사 팁: 산림청 등록 인증 합법 야영장. 무취사 백패커 전용 우선 예약 스폿 제공.</div>
+                <div class="card-actions">
+                    <button class="action-btn" onclick="alert('010-1234-5678 캠핑장 관리동으로 전화를 연결합니다.')">📞 전화하기</button>
+                    <button class="action-btn" onclick="alert('초평호반 캠핑장 카카오맵 지도 핀 위치로 연동합니다.')">📍 위치보기</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 하단 고정 탭 바 컨트롤러 -->
+    <nav>
+        <button id="tab-btn-transit" class="tab-button active" onclick="switchTab('transit')">
+            <span>🚌</span>환승
+        </button>
+        <button id="tab-btn-course" class="tab-button" onclick="switchTab('course')">
+            <span>🥾</span>코스
+        </button>
+        <button id="tab-btn-supply" class="tab-button" onclick="switchTab('supply')">
+            <span>🥩</span>보급
+        </button>
+    </nav>
+</div>
+
+<script>
+    /* 아이폰 8 브라우저 자원 및 RAM 방지 초경량 탭 전환 엔진 자바스크립트 */
+    function switchTab(tabName) {
+        // 1. 모든 콘텐츠 숨기기
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        // 2. 모든 버튼 비활성화색 처리
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 3. 선택한 탭 화면 및 메뉴 활성화 레이아웃 갱신
+        document.getElementById('content-' + tabName).classList.add('active');
+        document.getElementById('tab-btn-' + tabName).classList.add('active');
+    }
+
+    /* 탭 2: 평지/하이킹 이원화 노선 레이어 스위칭 가상 데이터 로직 */
+    function toggleMapRoute(type) {
+        const btnPlain = document.getElementById('btn-plain');
+        const btnHiking = document.getElementById('btn-hiking');
+        const linePlain = document.getElementById('line-plain');
+        const lineHiking = document.getElementById('line-hiking');
+        const statusText = document.getElementById('map-status-text');
+
+        if(type === 'PLAIN') {
+            btnPlain.classList.add('active-plain');
+            btnHiking.classList.remove('active-hiking');
+            linePlain.style.display = 'block';
+            lineHiking.style.display = 'none';
+            statusText.innerText = "수변 데크길 레이어 출력 중 (평지 경사도 0%)";
+        } else {
+            btnPlain.classList.remove('active-plain');
+            btnHiking.classList.add('active-hiking');
+            linePlain.style.display = 'none';
+            lineHiking.style.display = 'block';
+            statusText.innerText = "두타산 중심봉 종주로 레이어 출력 중 (산악 경사도 15%+)";
+        }
+    }
+</script>
+</body>
+</html>

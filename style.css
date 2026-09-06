@@ -1,0 +1,177 @@
+/* ==========================================================================
+   [교정 완료] 용천트레일 MVP 모바일 폰 프레임 고정 디자인 시스템
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: #e5e5ea; /* 폰 바깥 배경 (iOS 시스템 그레이) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* 브라우저 전체 스크롤 차단 */
+}
+
+/* index.html의 요소를 정중앙 모바일 폰 크기로 강제 가두는 핵심 컨테이너 */
+#app-container {
+    width: 375px;        /* 아이폰 표준 논리 너비 */
+    height: 667px;       /* 아이폰 표준 세로 높이 */
+    background-color: #ffffff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;    /* 프레임 바깥 탈출 봉쇄 */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15); /* 입체감 그림자 */
+    border-radius: 20px; /* 최신 스마트폰 곡면 에지 */
+    border: 4px solid #3a3a3c; /* 단말기 블랙 베ゼル 라인 */
+}
+
+/* 상단 고정 헤더 바 */
+header {
+    width: 100%;
+    height: 50px;
+    background-color: #1b4d3e; /* 시그니처 깊은 숲색 */
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+/* 구글 애드센스 광고 배너 구역 */
+.ads-banner {
+    width: 100%;
+    height: 50px;
+    background-color: #eaeaea;
+    color: #666666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px;
+    border-bottom: 1px solid #dddddd;
+    flex-shrink: 0;
+}
+
+/* 폰 프레임 내부 전용 독립 스크롤 main */
+main {
+    flex: 1;
+    overflow-y: auto;    /* 내부 스크롤만 활성화 */
+    padding: 15px;
+    padding-bottom: 80px; /* 하단 탭 내비바 가림 방지 여백 */
+    background-color: #f2f2f7; /* 애플 헬스 배경색 */
+}
+
+/* 탭 제어 전용 스위칭 클래스 */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* --------------------------------------------------------------------------
+   교통 타임라인 & 애플 헬스 카드 컴포넌트 GUI 스펙
+   -------------------------------------------------------------------------- */
+.timeline-card {
+    background: #ffffff;
+    border-left: 4px solid #1b4d3e;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.timeline-time { font-size: 12px; color: #888; }
+.timeline-title { font-size: 15px; font-weight: bold; margin: 4px 0; }
+.timeline-desc { font-size: 13px; color: #444; }
+.alert-text { color: #ff2d55; font-weight: bold; }
+
+.refresh-btn {
+    position: absolute;
+    bottom: 75px;
+    right: 15px;
+    width: 44px;
+    height: 44px;
+    background-color: #1b4d3e;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    z-index: 9;
+    cursor: pointer;
+}
+
+.map-filter-group { display: flex; gap: 10px; margin-bottom: 16px; }
+.filter-btn {
+    flex: 1; padding: 12px; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    background-color: #e5e5ea; color: #8e8e93; transition: all 0.2s;
+}
+.filter-btn.active-plain { background-color: #30d158; color: #ffffff; }
+.filter-btn.active-hiking { background-color: #ff2d55; color: #ffffff; }
+
+.health-summary-card, .health-chart-card, .health-insight-card {
+    background-color: #ffffff; border-radius: 16px; padding: 16px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.card-header-mini { font-size: 13px; font-weight: 600; color: #8e8e93; margin-bottom: 12px; }
+.ring-container { display: flex; align-items: center; gap: 20px; padding-bottom: 16px; border-bottom: 1px solid #f2f2f7; margin-bottom: 16px; }
+.activity-ring-mock {
+    width: 64px; height: 64px; border-radius: 50%; border: 8px solid #e5e5ea; border-top: 8px solid #30d158;
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #30d158;
+}
+.activity-ring-mock.hiking-mode { border-top-color: #ff2d55; color: #ff2d55; }
+.main-metric { font-size: 34px; font-weight: 700; letter-spacing: -1px; }
+.main-metric small { font-size: 17px; color: #8e8e93; }
+.sub-metric { font-size: 14px; color: #8e8e93; margin-top: -2px; }
+.metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.metric-item { display: flex; flex-direction: column; }
+.metric-label { font-size: 11px; color: #8e8e93; margin-bottom: 2px; }
+.metric-value { font-size: 16px; font-weight: 600; color: #000; }
+
+.chart-caption { font-size: 13px; color: #000; font-weight: 500; margin-bottom: 12px; }
+.chart-bars-frame { height: 120px; background-color: #fafafa; border-radius: 8px; display: flex; align-items: flex-end; justify-content: space-around; padding: 10px; border: 1px solid #f2f2f7; }
+.chart-bar-unit { width: 18px; background-color: #30d158; border-radius: 4px 4px 0 0; transition: height 0.4s, background-color 0.3s; }
+.chart-bar-unit.hiking { background-color: #ff2d55; }
+
+.health-insight-card { display: flex; gap: 12px; }
+.insight-icon { font-size: 22px; }
+.insight-title { font-size: 15px; font-weight: 600; }
+.insight-desc { font-size: 13px; line-height: 1.4; color: #48484a; }
+
+.lnt-warning { background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 12px; border: 1px solid #ffeeba; }
+.supply-card { background: #ffffff; border: 1px solid #e1e1e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.badge { display: inline-block; padding: 3px 6px; font-size: 10px; font-weight: bold; color: white; border-radius: 3px; margin-bottom: 6px; }
+.badge.market { background-color: #007bff; }
+.badge.camp { background-color: #28a745; }
+.card-title { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+.card-meta { font-size: 13px; color: #666; margin-bottom: 6px; }
+.tip-box { font-size: 12px; color: #1b4d3e; background-color: #edf7ed; padding: 8px; border-radius: 4px; font-weight: 500; }
+.card-actions { display: flex; gap: 8px; margin-top: 10px; }
+.action-btn { flex: 1; padding: 8px; border: 1px solid #ccc; background: #fff; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; }
+
+/* 하단 시스템 내비게이션 바 */
+nav {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+    background-color: #ffffff; border-top: 1px solid #dddddd; display: flex; z-index: 10;
+}
+.tab-button {
+    flex: 1; border: none; background: none; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; color: #888888; font-size: 11px; cursor: pointer;
+}
+.tab-button.active { color: #1b4d3e; font-weight: bold; }
+.tab-button span { font-size: 20px; margin-bottom: 2px; }
